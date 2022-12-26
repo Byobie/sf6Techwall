@@ -20,7 +20,34 @@ class ToDoController extends AbstractController
                 'Correction' => 'Corriger les exercices.',
             ];
             $session->set('todos', $todos);
+            $this->addFlash(
+               'initializing',
+               "La liste des todos vient d'être initialisée."
+            );
         };
         return $this->render('to_do/index.html.twig');
+    }
+
+    #[Route('/todo/add/{name}/{content}', name: 'todo.add')]
+    public function addToDo(Request $request, $name, $content): Response
+    {
+        $session = $request->getSession();
+        if ($session->has('todos') === true) {
+            $todos = $session->get('todos');
+            if (array_key_exists($name, $todos) === true || in_array($content, $todos) === true) {
+                $this->addFlash(
+                    'error',
+                    "Cette tâche existe déjà dans votre liste."
+                );
+            } else {
+                $todos[$name] = $content;
+                $session->set('todos', $todos);
+                $this->addFlash(
+                    'success',
+                    "La liste a bien été mise à jour."
+                );
+            };
+        };
+        return $this->redirectToRoute('app_to_do');
     }
 }
